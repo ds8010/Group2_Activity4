@@ -5,7 +5,8 @@ Authors:
         1.Youssef Marak:
              Contributed to the creating class article and defining the function read_data()
         
-        2.
+        2.Yosef Shibele:
+            Contributed on most part of the class Cart methods, addProduct(), removeProduct() and checkout().
         
         3.Dona Pal:
             Contributed in the menu(),beautify(),main() function. Also defined the displayCart() function
@@ -34,6 +35,8 @@ def read_data(file_path):
 
 # Class representing an article
 class Article:
+    """Creats a blueprint for a product object. """
+
     __slots__ = ['__name','__quantity','__price']
     def __init__(self, name, quantity, price):
         self.__name = name
@@ -56,11 +59,16 @@ class Article:
         return 'Article: '+ self.__name + '  Quantity: '+ str(self.__quantity)+'  Price: '+str(self.__price)
     
 class Cart:
+    """Creates a blueprint for the shopping cart object. """
+
     def __init__(self):
         self.__list_of_purchased = [] # stores the article object purchased
         self.name_purchased = []   # stores the name of the articles
-    
-    def addProduct(self, name, quantity):
+
+    # A method used to add items in the shopping cart
+    def addProduct(self, name, quantity): # A method used to add items in the shopping cart
+        """Adds an item to the shopping cart and updates the inventory based on the quantity given."""
+
         if name in INVENTORY: 
                 if quantity<0:
                     print('Quantity cannot be negative. Try again! ')
@@ -94,8 +102,10 @@ class Cart:
         
         else:
             print(name,'is currently not available in our inventory.')
-    
-    def removeProduct(self, name, quantity):
+    # A method used to remove item from the shopping cart
+    def removeProduct(self, name, quantity): 
+        """Removes items or only decreases the quantity of the item from the shopping cart based on the quantity given."""
+
         if name in self.name_purchased:
             if quantity<0:
                 print('Quantity cannot be negative. Try again! ')
@@ -116,8 +126,11 @@ class Cart:
         else:
             print(f'You do not have {name} in your cart. ')
     
+
     def checkout(self):
+        """Prints the items purchased and the total bill. And then removes the items from the shopping cart""" 
         if self.__list_of_purchased!=[]:
+            print(f'You are buying {len(self.__list_of_purchased)} items.')
             total_price = 0
             for item in self.__list_of_purchased:
                 name = item.getName()
@@ -129,15 +142,15 @@ class Cart:
                 else:
                     total_price += price * quantity * 1.07
                 
-            for item in self.__list_of_purchased:
-                self.__list_of_purchased.remove(item)
-                self.name_purchased.remove(name)
+            self.__list_of_purchased = []
+            self.name_purchased = []
             print('Total bill including VAT and discounts is: $'+str(total_price))
         
         else:
             print('You did not choose any item to buy. First add your item to the shopping cart.')
     
     def displayCart(self):
+        """Prints the number of item in the shopping cart and prints each items"""
         if self.__list_of_purchased == []:
             print('Your cart is empty.')
         else:
