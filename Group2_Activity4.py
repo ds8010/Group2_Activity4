@@ -3,7 +3,7 @@ GROUP 2
 Authors:
 
         1.Youssef Marak:
-             contributed to the creating class article and defining the function read_data()
+             Contributed to the creating class article and defining the function read_data()
         
         2.
         
