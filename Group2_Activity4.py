@@ -53,12 +53,89 @@ class Article:
         self.__quantity = quantity
     
     def __str__(self):
-        return 'Article: '+ self.__name + ' Quantity: '+ str(self.__quantity)+' Price: '+str(self.__price)
+        return 'Article: '+ self.__name + '  Quantity: '+ str(self.__quantity)+'  Price: '+str(self.__price)
     
 class Cart:
     def __init__(self):
         self.__list_of_purchased = [] # stores the article object purchased
         self.name_purchased = []   # stores the name of the articles
+    
+    def addProduct(self, name, quantity):
+        if name in INVENTORY: 
+                if quantity<0:
+                    print('Quantity cannot be negative. Try again! ')
+                else:
+                    available_quantity = INVENTORY[name][0]
+                    if available_quantity != 0:
+
+                        if quantity <= available_quantity:
+                            quantity_to_be_added = quantity
+
+                        elif quantity > available_quantity:
+                            print('We have only',available_quantity,name,'so only this quantity will be added to your cart.')
+                            quantity_to_be_added = available_quantity
+
+                        article = Article(name,quantity_to_be_added,INVENTORY[name][1])
+                        if name not in self.name_purchased:
+                            article.setQuantity(quantity_to_be_added)
+                            self.__list_of_purchased.append(article)
+                            self.name_purchased.append(name)
+                            INVENTORY[name][0] -= quantity_to_be_added
+
+                        elif name in self.name_purchased:
+                            for item in self.__list_of_purchased:
+                                if item.getName() == name:
+                                    quantity_in_cart = item.getQuantity()
+                                    item.setQuantity(quantity_to_be_added + quantity_in_cart)
+                                    INVENTORY[name][0] -= quantity_to_be_added
+
+                    elif available_quantity == 0:
+                        print('Sorry, we have finished',name)
+        
+        else:
+            print(name,'is currently not available in our inventory.')
+    
+    def removeProduct(self, name, quantity):
+        if name in self.name_purchased:
+            if quantity<0:
+                print('Quantity cannot be negative. Try again! ')
+            else:
+                for article in self.__list_of_purchased:
+                    if article.getName() == name:
+                        quantity_in_cart = article.getQuantity()
+                        if quantity < quantity_in_cart:
+                            article.setQuantity(quantity_in_cart-quantity)
+                            print(f'You removed {quantity} items of {name} . Now you have {quantity_in_cart-quantity} {name} in your cart.')
+                            INVENTORY[name][0] += quantity
+                        elif quantity >= quantity_in_cart:
+                            self.name_purchased.remove(name)
+                            self.__list_of_purchased.remove(article)
+                            print(f'You had only {quantity_in_cart} {name} .So all of {name} items are removed from your cart.')
+                            INVENTORY[name][0] += quantity_in_cart
+                        break
+        else:
+            print(f'You do not have {name} in your cart. ')
+    
+    def checkout(self):
+        if self.__list_of_purchased!=[]:
+            total_price = 0
+            for item in self.__list_of_purchased:
+                name = item.getName()
+                quantity = item.getQuantity()
+                price = INVENTORY[name][1]
+                print(f'{name}, {quantity}, {price}')
+                if item.getQuantity() >= 3:
+                    total_price += price* quantity * 0.10 * 1.07# Apply 10% discount and 7% VAT
+                else:
+                    total_price += price * quantity * 1.07
+                
+            for item in self.__list_of_purchased:
+                self.__list_of_purchased.remove(item)
+                self.name_purchased.remove(name)
+            print('Total bill including VAT and discounts is: $'+str(total_price))
+        
+        else:
+            print('You did not choose any item to buy. First add your item to the shopping cart.')
     
     def displayCart(self):
         if self.__list_of_purchased == []:
@@ -70,22 +147,20 @@ class Cart:
                 print("ITEM "+str(n)+": ",product) 
                 n+=1
 
-
-
-
 def menu():
     """Menu Function that displays the Menu of options when called."""
 
+    print("_______________________________________________________")
+    print("|\t                 MENU                          |")
+    print("|______________________________________________________|")
+    print("|\t1. List all of items, inventory and price      |")
+    print("|\t2. List shopping cart items                    |")
+    print("|\t3. Add an item to the shopping cart            |")
+    print("|\t4. Remove an item from the shopping cart       |")
+    print("|\t5. Checkout                                    |")
+    print("|\t6. Exit                                        |")
+    print("|______________________________________________________|")
 
-    print("\t                 MENU                     ")
-    print("_______________________________________________________")
-    print("\t1. List all of items, inventory and price")
-    print("\t2. List shopping cart items")
-    print("\t3. Add an item to the shopping cart")
-    print("\t4. Remove an item from the shopping cart")
-    print("\t5. Checkout")
-    print("_______________________________________________________")
-    print("\t6. Exit")
 
 def beautify():
     # To print a line of stars
@@ -100,7 +175,15 @@ def main():
                 \tWelcome  
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 ''')
-    read_data('products.csv')
+    while True:
+        file_path = input('Enter the path of your csv file: ')
+        try:
+            read_data(file_path)
+            break
+        except FileNotFoundError:
+            print('File is not found. ')
+            continue
+
     cart = Cart()
     
     while True:
@@ -125,21 +208,29 @@ Name: [Quantity, Price]\n''')
                 
         elif choice == '3':
             name = input("Enter the name of the product to add: ").lower()
-            quantity = int(input("Enter the quantity to add: "))
-            if quantity < 0:
-                print('Quantity cannot be negative. Try again! ')
-                quantity = input("Enter the quantity to add: ")
-            cart.addProduct(name, quantity)
-            beautify()
-
+            try:
+                if name in INVENTORY:
+                    quantity = input("Enter the quantity to add: ")
+            
+                    cart.addProduct(name, int(quantity))
+                else:
+                    print(name,'is currently not available in our inventory.')
+            except ValueError:
+                print('You entered a string value for quantity. It should be a positive integer. ')
+            beautify()    
+            
         elif choice == '4':
             name = input("Enter the name of the product to remove: ")
-            quantity = int(input("Enter the quantity to remove: "))
-            if quantity < 0:
-                print('Quantity cannot be negative. Try again! ')
-                quantity = input("Enter the quantity to add: ")
-            cart.removeProduct(name, quantity)
-            beautify()
+            try:
+                if name in INVENTORY:
+                    quantity = input("Enter the quantity to remove: ")
+            
+                    cart.removeProduct(name, int(quantity))
+                else:
+                    print(name,'is currently not available in our inventory.')
+            except ValueError:
+                print('You entered a string value for quantity. It should be a positive integer. ')
+            beautify()   
 
         elif choice == '5':
             cart.checkout()
