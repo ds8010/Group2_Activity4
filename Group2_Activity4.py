@@ -59,7 +59,80 @@ class Cart:
     def __init__(self):
         self.__list_of_purchased = [] # stores the article object purchased
         self.name_purchased = []   # stores the name of the articles
-    
+    def addProduct(self, name, quantity):
+        if name in INVENTORY: 
+                if quantity<0:
+                    print('Quantity cannot be negative. Try again! ')
+                else:
+                    available_quantity = INVENTORY[name][0]
+                    if available_quantity != 0:
+
+                        if quantity <= available_quantity:
+                            quantity_to_be_added = quantity
+
+                        elif quantity > available_quantity:
+                            print('We have only',available_quantity,name,'so only this quantity will be added to your cart.')
+                            quantity_to_be_added = available_quantity
+
+                        article = Article(name,quantity_to_be_added,INVENTORY[name][1])
+                        if name not in self.name_purchased:
+                            article.setQuantity(quantity_to_be_added)
+                            self.__list_of_purchased.append(article)
+                            self.name_purchased.append(name)
+                            INVENTORY[name][0] -= quantity_to_be_added
+
+                        elif name in self.name_purchased:
+                            for item in self.__list_of_purchased:
+                                if item.getName() == name:
+                                    quantity_in_cart = item.getQuantity()
+                                    item.setQuantity(quantity_to_be_added + quantity_in_cart)
+                                    INVENTORY[name][0] -= quantity_to_be_added
+
+                    elif available_quantity == 0:
+                        print('Sorry, we have finished',name)
+        
+        else:
+            print(name,'is currently not available in our inventory.')
+    def removeProduct(self, name, quantity):
+        if name in self.name_purchased:
+            if quantity<0:
+                print('Quantity cannot be negative. Try again! ')
+            else:
+                for article in self.__list_of_purchased:
+                    if article.getName() == name:
+                        quantity_in_cart = article.getQuantity()
+                        if quantity < quantity_in_cart:
+                            article.setQuantity(quantity_in_cart-quantity)
+                            print(f'You removed {quantity} items of {name} . Now you have {quantity_in_cart-quantity} {name} in your cart.')
+                            INVENTORY[name][0] += quantity
+                        elif quantity >= quantity_in_cart:
+                            self.name_purchased.remove(name)
+                            self.__list_of_purchased.remove(article)
+                            print(f'You had only {quantity_in_cart} {name} .So all of {name} items are removed from your cart.')
+                            INVENTORY[name][0] += quantity_in_cart
+                        break
+        else:
+            print(f'You do not have {name} in your cart. ')
+    def checkout(self):
+        if self.__list_of_purchased!=[]:
+            total_price = 0
+            for item in self.__list_of_purchased:
+                name = item.getName()
+                quantity = item.getQuantity()
+                price = INVENTORY[name][1]
+                print(f'{name}, {quantity}, {price}')
+                if item.getQuantity() >= 3:
+                    total_price += price* quantity * 0.10 * 1.07# Apply 10% discount and 7% VAT
+                else:
+                    total_price += price * quantity * 1.07
+                
+            for item in self.__list_of_purchased:
+                self.__list_of_purchased.remove(item)
+                self.name_purchased.remove(name)
+            print('Total bill including VAT and discounts is: $'+str(total_price))
+        
+        else:
+            print('You did not choose any item to buy. First add your item to the shopping cart.')
     def displayCart(self):
         if self.__list_of_purchased == []:
             print('Your cart is empty.')
@@ -69,9 +142,6 @@ class Cart:
             for product in self.__list_of_purchased:
                 print("ITEM "+str(n)+": ",product) 
                 n+=1
-
-
-
 
 def menu():
     """Menu Function that displays the Menu of options when called."""
