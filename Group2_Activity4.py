@@ -1,3 +1,17 @@
+"""
+GROUP 2
+Authors:
+
+        1. 
+        
+
+        2.Dona Pal:
+            Contributed in the functions: 
+        
+
+"""
+
+
 import csv
 # Global dictionary to store inventory
 INVENTORY = {}
