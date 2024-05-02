@@ -72,6 +72,8 @@ class Cart:
         if name in INVENTORY: 
                 if quantity<0:
                     print('Quantity cannot be negative. Try again! ')
+                elif quantity==0:
+                    print(f'You have not added any {name} in the cart')
                 else:
                     available_quantity = INVENTORY[name][0]
                     if available_quantity != 0:
@@ -98,10 +100,11 @@ class Cart:
                                     INVENTORY[name][0] -= quantity_to_be_added
 
                     elif available_quantity == 0:
-                        print('Sorry, we have finished',name)
+                        print('Sorry, we are out of stock of',name)
         
         else:
             print(name,'is currently not available in our inventory.')
+
     # A method used to remove item from the shopping cart
     def removeProduct(self, name, quantity): 
         """Removes items or only decreases the quantity of the item from the shopping cart based on the quantity given."""
@@ -194,7 +197,7 @@ def main():
             read_data(file_path)
             break
         except FileNotFoundError:
-            print('File is not found. ')
+            print('File is not found! ')
             continue
 
     cart = Cart()
